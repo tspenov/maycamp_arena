@@ -3,7 +3,7 @@ require 'digest/sha1'
 
 class User < ActiveRecord::Base
   include Latinize
-
+  
   devise :omniauthable, :omniauth_providers => [:google_oauth2]
   validates_presence_of     :login
   validates_length_of       :login,    :within => 3..40
@@ -15,12 +15,13 @@ class User < ActiveRecord::Base
   validates_presence_of     :email
   validates_length_of       :email,    :within => 6..100 #r@a.wk
 
-  validates_presence_of     :unencrypted_password, :on => :create
+  validates_presence_of     :unencrypted_password, :on => :create, unless: :skip_from_google_login
   validates_confirmation_of :unencrypted_password
 
-  validates_presence_of :city
+  validates_presence_of :city, unless: :skip_from_google_login
 
   attr_accessor :unencrypted_password
+  attr_accessor :skip_from_google_login
 
   has_many :contest_start_events, :dependent => :destroy
   has_many :runs, :dependent => :destroy
