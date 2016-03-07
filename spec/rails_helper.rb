@@ -3,6 +3,8 @@ ENV["RAILS_ENV"] ||= 'test'
 require 'spec_helper'
 require File.expand_path("../../config/environment", __FILE__)
 require 'rspec/rails'
+
+
 # Add additional requires below this line. Rails is not loaded until this point!
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
@@ -50,4 +52,6 @@ RSpec.configure do |config|
 
   config.include AutenticationHelpers, type: :controller
   config.include ActionDispatch::TestProcess
+
+  OmniAuth.config.test_mode = true
 end

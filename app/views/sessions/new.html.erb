@@ -15,6 +15,6 @@
   <p><%= link_to "Забравена парола?", :controller => :users, :action => "password_forgot" %></p>
 <% end -%>
 <br />
-<%= link_to image_tag("sign-in-with-google2.png", alt: "Sign in with google", class: 'google-sign-in'),
-              user_omniauth_authorize_path(:google_oauth2) -%>
+<%= link_to image_tag("sign-in-with-google2.png", alt: "Sign in with Google", class: 'google-sign-in'),
+              user_omniauth_authorize_path(:google_oauth2), id:"google-sign-in" -%>
 

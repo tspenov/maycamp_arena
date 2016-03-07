@@ -26,7 +26,7 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
         user.password = Devise.friendly_token[0,20] #??? should I fill password field or skip it
         user.name = auth.info.name
         user.login = auth.uid   #??? should I generate some other uniq random string for login
-        user.role = "contester"
+        user.role = User::CONTESTER
         user.save! if user.valid?
         register_user = true
       end
@@ -56,7 +56,6 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
   end
 
   def failure
-
     flash[:error] = "Не успяхме да ви оторизираме чрез Google"
     redirect_to new_session_path
   end
