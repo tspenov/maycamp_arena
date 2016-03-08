@@ -1,4 +1,3 @@
-require 'awesome_print'
 describe Users::OmniauthCallbacksController do
   
   def mock_auth_hash
@@ -18,18 +17,9 @@ describe Users::OmniauthCallbacksController do
     request.env['omniauth.auth'] = OmniAuth.config.mock_auth[:google_oauth2]
   end
 
-  before do
+  before(:each) do
     
     request.env["devise.mapping"] = Devise.mappings[:user]
-
-    @mock_auth_hash = {
-      'provider':'google_oauth2',
-      'uid': '12345',
-      'info': {
-        'name':'Test user',
-        'email':'testgoogle@example.com'
-      }
-    }
     OmniAuth.config.add_mock(:google_oauth2, mock_auth_hash())
     request.env['omniauth.auth'] = OmniAuth.config.mock_auth[:google_oauth2]
   
@@ -54,12 +44,11 @@ describe Users::OmniauthCallbacksController do
       name: "Test user",
       city: "Айтос"
     }
+
+    User.delete_all
   end
 
   describe "#google_oauth2" do
-    before(:each) do
-      User.delete_all
-    end
 
     context "user does not exist" do
 
