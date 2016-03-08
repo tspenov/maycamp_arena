@@ -4,6 +4,16 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
 
     auth = request.env["omniauth.auth"]
 
+    if auth.nil? or !auth.has_key?(:provider) or 
+      !auth.has_key?(:uid) or !auth.has_key?(:info) or
+      !auth[:info].has_key?(:email) or !auth[:info].has_key?(:name) or 
+      auth.uid.length == 0 or auth.provider.length == 0 or
+      auth.info.email.length == 0 or auth.info.email.length == 0
+
+      flash[:error] = "Не успяхме да ви оторизираме чрез Google поради невалидни данни"
+      return redirect_to new_session_path
+    end
+
     user = User.where(provider: auth.provider, uid: auth.uid).first
     register_user = false
 
