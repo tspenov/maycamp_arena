@@ -9,7 +9,7 @@ Before('@google_sign_in') do
       'email':'testgoogle@example.com'
       }
   }
-OmniAuth.config.add_mock(:google_oauth2, mock_auth_hash)
+  OmniAuth.config.add_mock(:google_oauth2, mock_auth_hash)
 end
 
 After('@google_sign_in') do
