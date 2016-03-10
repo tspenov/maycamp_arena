@@ -52,6 +52,4 @@ RSpec.configure do |config|
 
   config.include AutenticationHelpers, type: :controller
   config.include ActionDispatch::TestProcess
-
-  OmniAuth.config.test_mode = true
 end

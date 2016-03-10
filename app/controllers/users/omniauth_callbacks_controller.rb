@@ -4,12 +4,7 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
 
     auth = request.env["omniauth.auth"]
 
-    if auth.nil? or !auth.has_key?(:provider) or 
-      !auth.has_key?(:uid) or !auth.has_key?(:info) or
-      !auth[:info].has_key?(:email) or !auth[:info].has_key?(:name) or 
-      auth.uid.length == 0 or auth.provider.length == 0 or
-      auth.info.email.length == 0 or auth.info.email.length == 0
-
+    if invalid_omniauth_params?(auth)
       flash[:error] = "Не успяхме да ви оторизираме чрез Google поради невалидни данни"
       return redirect_to new_session_path
     end
@@ -20,27 +15,16 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
     # first time login with this provider
     unless user
       user = User.where(email: auth.info.email).last
-      
       # found user with such email - add provider and uid
       if user
         user.provider = auth.provider
         user.uid = auth.uid
-        user.save!
-
+        user.save! if user.valid?
       # first time login with this provider & no user with such email - register user
       else
-        user = User.new(skip_from_google_login: true)
-        user.provider = auth.provider
-        user.uid = auth.uid
-        user.email = auth.info.email
-        user.password = Devise.friendly_token[0,20] #??? should I fill password field or skip it
-        user.name = auth.info.name
-        user.login = auth.uid   #??? should I generate some other uniq random string for login
-        user.role = User::CONTESTER
-        user.save! if user.valid?
+        user = register_user_from_omniath(auth)
         register_user = true
       end
-
     end
 
     if !user.nil? and user.persisted?
@@ -50,14 +34,9 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
       if register_user
         flash[:error] = "Данните в профила Ви не са пълни. Моле попълнете липсващите данни."
         redirect_to edit_user_path(self.current_user)
-      elsif session[:back]
-        back_path = session[:back]
-        session[:back] = nil
-        redirect_to back_path
       else
-        redirect_to root_path
+        redirect_back_or(root_path)
       end
-
     else
       flash[:error] = "Регистрирайте се, за да използвате системата"
       redirect_to signup_url
@@ -69,5 +48,38 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
     flash[:error] = "Не успяхме да ви оторизираме чрез Google"
     redirect_to new_session_path
   end
+
+  private
+
+    def invalid_omniauth_params?(auth)
+      auth.nil? or !auth.has_key?(:provider) or 
+      !auth.has_key?(:uid) or !auth.has_key?(:info) or
+      !auth[:info].has_key?(:email) or !auth[:info].has_key?(:name) or 
+      auth.uid.length == 0 or auth.provider.length == 0 or
+      auth.info.email.length == 0 or auth.info.email.length == 0
+    end
+
+    def register_user_from_omniath(auth)
+      user = User.new(skip_from_google_login: true)
+      user.provider = auth.provider
+      user.uid = auth.uid
+      user.email = auth.info.email
+      user.password = Devise.friendly_token[0,20] #??? should I fill password field or skip it
+      user.name = auth.info.name
+      user.login = auth.uid   #??? should I generate some other uniq random string for login
+      user.role = User::CONTESTER
+      user.save! if user.valid?
+      return user
+    end
+
+    def redirect_back_or(default_path)
+      if session[:back]
+        back_path = session[:back]
+        session[:back] = nil
+        redirect_to back_path
+      else
+        redirect_to default_path
+      end
+    end
 
 end
