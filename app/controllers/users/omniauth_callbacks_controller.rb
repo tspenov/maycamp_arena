@@ -17,9 +17,7 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
       user = User.where(email: auth.info.email).last
       # found user with such email - add provider and uid
       if user
-        user.provider = auth.provider
-        user.uid = auth.uid
-        user.save! if user.valid?
+        user.update(provider: auth.provider, uid: auth.uid)
       # first time login with this provider & no user with such email - register user
       else
         user = register_user_from_omniath(auth)
@@ -52,23 +50,21 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
   private
 
     def invalid_omniauth_params?(auth)
-      auth.nil? or !auth.has_key?(:provider) or 
-      !auth.has_key?(:uid) or !auth.has_key?(:info) or
-      !auth[:info].has_key?(:email) or !auth[:info].has_key?(:name) or 
-      auth.uid.length == 0 or auth.provider.length == 0 or
-      auth.info.email.length == 0 or auth.info.email.length == 0
+      !auth || auth.provider.blank? || auth.uid.blank? || auth.info.blank? ||
+       auth.info.name.blank? || auth.info.email.blank?
     end
 
     def register_user_from_omniath(auth)
       user = User.new(skip_from_google_login: true)
-      user.provider = auth.provider
-      user.uid = auth.uid
-      user.email = auth.info.email
-      user.password = Devise.friendly_token[0,20] #??? should I fill password field or skip it
-      user.name = auth.info.name
-      user.login = auth.uid   #??? should I generate some other uniq random string for login
-      user.role = User::CONTESTER
-      user.save! if user.valid?
+      user.update(
+        provider: auth.provider,
+        uid: auth.uid,
+        email: auth.info.email,
+        password: Devise.friendly_token[0,20],
+        name: auth.info.name,
+        login: auth.uid,
+        role: User::CONTESTER
+      )
       return user
     end
 
